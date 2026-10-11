@@ -16,9 +16,8 @@ import {
   Palette,
   Sun,
   Menu,
-  MessageSquare,
   Mic,
-  MoreHorizontal,
+
   Paperclip,
   Plus,
   Search,
