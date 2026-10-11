@@ -24,7 +24,6 @@ import {
   Search,
   Settings,
   Sparkles,
-  User,
   X,
   Trash2
 } from "lucide-react";
@@ -2254,12 +2253,6 @@ function AuthScreen({
     }
   };
 
-  const title =
-    mode === "login" ? "Welcome back" :
-    mode === "register" ? "Create your account" :
-    mode === "verify-email" ? "Verify your email" :
-    mode === "forgot-password" ? "Forgot password?" :
-    "Create a new password";
 
   const description =
     mode === "login" ? "Sign in to continue to your personal workspace." :
