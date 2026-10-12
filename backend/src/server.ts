@@ -122,14 +122,14 @@ async function startServer() {
   try {
     await connectDB();
 
-    app.listen(PORT, () => {
-      console.log("==========================================");
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
-      console.log("📡 Request logging is ENABLED");
-      console.log("📦 JSON body parsing is ENABLED");
-      console.log("🌐 Local CORS is ENABLED");
-      console.log("==========================================");
-    });
+    app.listen(Number(PORT), "0.0.0.0", () => {
+  console.log("==========================================");
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log("📡 Request logging is ENABLED");
+  console.log("📦 JSON body parsing is ENABLED");
+  console.log("🌐 CORS is ENABLED");
+  console.log("==========================================");
+});
   } catch (error) {
     console.error("❌ Server startup failed:", error);
     process.exit(1);

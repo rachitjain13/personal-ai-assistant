@@ -2,8 +2,24 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434";
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "qwen3:0.6b";
+/*
+ * Ollama Cloud configuration
+ *
+ * Local:
+ *   http://localhost:11434
+ *
+ * Cloud:
+ *   https://ollama.com
+ */
+
+const OLLAMA_URL =
+  process.env.OLLAMA_URL || "https://ollama.com";
+
+const OLLAMA_MODEL =
+  process.env.OLLAMA_MODEL || "gemma4:31b";
+
+const OLLAMA_API_KEY =
+  process.env.OLLAMA_API_KEY;
 
 export type ChatMessage = {
   role: "user" | "model";
@@ -64,7 +80,9 @@ export type TokenUsageMetadata = {
   thoughtsTokenCount?: number;
 };
 
-function attachmentToText(attachment: ChatAttachment): string | null {
+function attachmentToText(
+  attachment: ChatAttachment
+): string | null {
   const mimeType = attachment.mimeType.toLowerCase();
 
   const textTypes = [
@@ -76,14 +94,19 @@ function attachmentToText(attachment: ChatAttachment): string | null {
     "application/sql",
   ];
 
-  const isText = textTypes.some((type) => mimeType.startsWith(type));
+  const isText = textTypes.some((type) =>
+    mimeType.startsWith(type)
+  );
 
   if (!isText) {
     return null;
   }
 
   try {
-    return Buffer.from(attachment.data, "base64").toString("utf-8");
+    return Buffer.from(
+      attachment.data,
+      "base64"
+    ).toString("utf-8");
   } catch {
     return null;
   }
@@ -107,7 +130,7 @@ function buildAttachmentContext(
       );
     } else {
       sections.push(
-        `\nThe user attached "${attachment.name}" (${attachment.mimeType}), but this local text model cannot directly inspect this file type.\n`
+        `\nThe user attached "${attachment.name}" (${attachment.mimeType}), but this AI model cannot directly inspect this file type.\n`
       );
     }
   }
@@ -115,8 +138,12 @@ function buildAttachmentContext(
   return sections.join("\n");
 }
 
-function convertRole(role: ChatMessage["role"]): "user" | "assistant" {
-  return role === "model" ? "assistant" : "user";
+function convertRole(
+  role: ChatMessage["role"]
+): "user" | "assistant" {
+  return role === "model"
+    ? "assistant"
+    : "user";
 }
 
 export async function streamAIResponse(
@@ -128,44 +155,95 @@ export async function streamAIResponse(
     usage: TokenUsageMetadata
   ) => void | Promise<void>
 ) {
+  /*
+   * ---------------------------------------------------------
+   * 1. Validate Ollama Cloud API key
+   * ---------------------------------------------------------
+   */
+
+  if (!OLLAMA_API_KEY) {
+    throw new Error(
+      "OLLAMA_API_KEY is missing. Please configure it in your backend environment."
+    );
+  }
+
+  /*
+   * ---------------------------------------------------------
+   * 2. Select system instruction
+   * ---------------------------------------------------------
+   */
+
   const systemInstruction =
-    modeInstructions[mode] || modeInstructions.Assistant;
+    modeInstructions[mode] ||
+    modeInstructions.Assistant;
 
-  const lastUserMessageIndex = messages.reduce(
-    (lastIndex, message, index) =>
-      message.role === "user" ? index : lastIndex,
-    -1
-  );
+  /*
+   * ---------------------------------------------------------
+   * 3. Find latest user message
+   * ---------------------------------------------------------
+   */
 
-  const attachmentContext = buildAttachmentContext(attachments);
+  const lastUserMessageIndex =
+    messages.reduce(
+      (lastIndex, message, index) =>
+        message.role === "user"
+          ? index
+          : lastIndex,
+      -1
+    );
 
-  const ollamaMessages = messages.map((message, index) => {
-    let content = message.content;
+  /*
+   * ---------------------------------------------------------
+   * 4. Build attachment context
+   * ---------------------------------------------------------
+   */
 
-    // Attach file information only to the latest user message.
-    if (
-      index === lastUserMessageIndex &&
-      message.role === "user" &&
-      attachments.length > 0
-    ) {
-      if (content.trim()) {
-        content += "\n\n";
+  const attachmentContext =
+    buildAttachmentContext(attachments);
+
+  /*
+   * ---------------------------------------------------------
+   * 5. Convert messages to Ollama format
+   * ---------------------------------------------------------
+   */
+
+  const ollamaMessages = messages.map(
+    (message, index) => {
+      let content = message.content;
+
+      /*
+       * Attach file information only to the
+       * latest user message.
+       */
+
+      if (
+        index === lastUserMessageIndex &&
+        message.role === "user" &&
+        attachments.length > 0
+      ) {
+        if (content.trim()) {
+          content += "\n\n";
+        }
+
+        content +=
+          "Please use the following attached file information when answering the user's question:\n";
+
+        content += attachmentContext;
       }
 
-      content +=
-        "Please use the following attached file information when answering the user's question:\n";
-
-      content += attachmentContext;
+      return {
+        role: convertRole(message.role),
+        content,
+      };
     }
+  );
 
-    return {
-      role: convertRole(message.role),
-      content,
-    };
-  });
+  /*
+   * ---------------------------------------------------------
+   * 6. If only an attachment was sent
+   * ---------------------------------------------------------
+   */
 
-  // If there are attachments but the latest user message was empty,
-  // create a user message containing the attachment information.
   if (
     attachments.length > 0 &&
     lastUserMessageIndex === -1
@@ -178,50 +256,108 @@ export async function streamAIResponse(
     });
   }
 
+  /*
+   * ---------------------------------------------------------
+   * 7. Ollama Cloud request body
+   * ---------------------------------------------------------
+   */
+
   const requestBody = {
-  model: OLLAMA_MODEL,
-  messages: [
-    {
-      role: "system",
-      content: systemInstruction,
+    model: OLLAMA_MODEL,
+
+    messages: [
+      {
+        role: "system",
+        content: systemInstruction,
+      },
+      ...ollamaMessages,
+    ],
+
+    stream: true,
+
+    /*
+     * Disable thinking to keep responses faster
+     * and reduce unnecessary token usage.
+     */
+    think: false,
+
+    options: {
+      temperature: 0.7,
+
+      /*
+       * Context window used by the model.
+       */
+      num_ctx: 1024,
+
+      /*
+       * Maximum generated tokens.
+       */
+      num_predict: 160,
     },
-    ...ollamaMessages,
-  ],
-  stream: true,
-  think: false,
-  options: {
-    temperature: 0.7,
-    num_ctx: 1024,
-    num_predict: 160,
-  },
-  keep_alive: "30m",
-};
+  };
+
+  /*
+   * ---------------------------------------------------------
+   * 8. Logging
+   * ---------------------------------------------------------
+   */
+
   console.log(
-    `Sending request to Ollama: ${OLLAMA_URL}`
+    `Sending request to Ollama Cloud: ${OLLAMA_URL}`
   );
 
   console.log(
-    `Ollama model: ${OLLAMA_MODEL}`
+    `Ollama Cloud model: ${OLLAMA_MODEL}`
   );
+
+  /*
+   * ---------------------------------------------------------
+   * 9. Send request to Ollama Cloud
+   * ---------------------------------------------------------
+   */
 
   const response = await fetch(
-    `${OLLAMA_URL}/api/chat`,
+    `${OLLAMA_URL.replace(/\/+$/, "")}/api/chat`,
     {
       method: "POST",
+
       headers: {
         "Content-Type": "application/json",
+
+        /*
+         * Ollama Cloud authentication.
+         */
+        Authorization: `Bearer ${OLLAMA_API_KEY}`,
       },
+
       body: JSON.stringify(requestBody),
     }
   );
 
+  /*
+   * ---------------------------------------------------------
+   * 10. Handle API errors
+   * ---------------------------------------------------------
+   */
+
   if (!response.ok) {
     const errorText = await response.text();
+
+    console.error(
+      `Ollama Cloud API error (${response.status}):`,
+      errorText
+    );
 
     throw new Error(
       `Ollama API error (${response.status}): ${errorText}`
     );
   }
+
+  /*
+   * ---------------------------------------------------------
+   * 11. Validate response body
+   * ---------------------------------------------------------
+   */
 
   if (!response.body) {
     throw new Error(
@@ -229,34 +365,80 @@ export async function streamAIResponse(
     );
   }
 
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
+  /*
+   * ---------------------------------------------------------
+   * 12. Create stream reader
+   * ---------------------------------------------------------
+   */
+
+  const reader =
+    response.body.getReader();
+
+  const decoder =
+    new TextDecoder();
 
   let buffer = "";
 
-  let promptTokenCount: number | undefined;
-  let candidatesTokenCount: number | undefined;
-  let totalTokenCount: number | undefined;
+  /*
+   * ---------------------------------------------------------
+   * 13. Token usage variables
+   * ---------------------------------------------------------
+   */
+
+  let promptTokenCount:
+    | number
+    | undefined;
+
+  let candidatesTokenCount:
+    | number
+    | undefined;
+
+  let totalTokenCount:
+    | number
+    | undefined;
+
+  /*
+   * ---------------------------------------------------------
+   * 14. Read streaming response
+   * ---------------------------------------------------------
+   */
 
   try {
     while (true) {
-      const { value, done } = await reader.read();
+      const {
+        value,
+        done,
+      } = await reader.read();
 
       if (done) {
         break;
       }
 
-      buffer += decoder.decode(value, {
-        stream: true,
-      });
+      buffer += decoder.decode(
+        value,
+        {
+          stream: true,
+        }
+      );
 
-      const lines = buffer.split("\n");
+      /*
+       * Ollama sends newline-delimited JSON.
+       */
 
-      // Keep incomplete JSON line for next chunk.
-      buffer = lines.pop() || "";
+      const lines =
+        buffer.split("\n");
+
+      /*
+       * Keep incomplete JSON line
+       * for the next chunk.
+       */
+
+      buffer =
+        lines.pop() || "";
 
       for (const line of lines) {
-        const trimmed = line.trim();
+        const trimmed =
+          line.trim();
 
         if (!trimmed) {
           continue;
@@ -267,15 +449,25 @@ export async function streamAIResponse(
             role?: string;
             content?: string;
           };
+
           done?: boolean;
+
           prompt_eval_count?: number;
+
           eval_count?: number;
+
           total_duration?: number;
+
           load_duration?: number;
         };
 
+        /*
+         * Parse JSON chunk.
+         */
+
         try {
-          data = JSON.parse(trimmed);
+          data =
+            JSON.parse(trimmed);
         } catch {
           console.warn(
             "Could not parse Ollama stream chunk:",
@@ -285,79 +477,163 @@ export async function streamAIResponse(
           continue;
         }
 
-        // Send generated text to the controller/frontend.
-        const text = data.message?.content;
+        /*
+         * ---------------------------------------------------
+         * Send generated text to frontend
+         * ---------------------------------------------------
+         */
+
+        const text =
+          data.message?.content;
 
         if (text) {
           onChunk(text);
         }
 
-        // Ollama provides token counts on the final chunk.
-        if (typeof data.prompt_eval_count === "number") {
+        /*
+         * ---------------------------------------------------
+         * Collect token usage
+         * ---------------------------------------------------
+         */
+
+        if (
+          typeof data.prompt_eval_count ===
+          "number"
+        ) {
           promptTokenCount =
             data.prompt_eval_count;
         }
 
-        if (typeof data.eval_count === "number") {
+        if (
+          typeof data.eval_count ===
+          "number"
+        ) {
           candidatesTokenCount =
             data.eval_count;
         }
 
-        if (data.done) {
-          if (
-            promptTokenCount !== undefined ||
-            candidatesTokenCount !== undefined
-          ) {
-            totalTokenCount =
-              (promptTokenCount || 0) +
-              (candidatesTokenCount || 0);
+        /*
+         * ---------------------------------------------------
+         * Final response
+         * ---------------------------------------------------
+         */
 
-            if (onUsage) {
-              await onUsage({
-                promptTokenCount,
-                candidatesTokenCount,
-                totalTokenCount,
-                // Ollama/Qwen does not expose
-                // Gemini-style thoughtsTokenCount here.
-                thoughtsTokenCount: undefined,
-              });
-            }
+        if (data.done) {
+          totalTokenCount =
+            (promptTokenCount || 0) +
+            (candidatesTokenCount || 0);
+
+          /*
+           * Send usage information
+           * to the controller/database.
+           */
+
+          if (onUsage) {
+            await onUsage({
+              promptTokenCount,
+              candidatesTokenCount,
+              totalTokenCount,
+
+              /*
+               * Ollama does not provide
+               * Gemini-style thoughtsTokenCount
+               * here.
+               */
+              thoughtsTokenCount:
+                undefined,
+            });
           }
 
           console.log(
-            `Ollama generation completed. Prompt tokens: ${promptTokenCount ?? 0
-            }, Output tokens: ${candidatesTokenCount ?? 0
-            }, Total: ${totalTokenCount ?? 0}`
+            `Ollama Cloud generation completed. ` +
+              `Prompt tokens: ${
+                promptTokenCount ?? 0
+              }, ` +
+              `Output tokens: ${
+                candidatesTokenCount ?? 0
+              }, ` +
+              `Total: ${
+                totalTokenCount ?? 0
+              }`
           );
         }
       }
     }
 
-    // Process any final buffered line.
+    /*
+     * ---------------------------------------------------------
+     * 15. Process final buffered JSON
+     * ---------------------------------------------------------
+     */
+
     if (buffer.trim()) {
       try {
-        const data = JSON.parse(buffer);
+        const data =
+          JSON.parse(buffer);
 
-        const text = data.message?.content;
+        const text =
+          data.message?.content;
 
         if (text) {
           onChunk(text);
         }
 
-        if (typeof data.prompt_eval_count === "number") {
+        if (
+          typeof data.prompt_eval_count ===
+          "number"
+        ) {
           promptTokenCount =
             data.prompt_eval_count;
         }
 
-        if (typeof data.eval_count === "number") {
+        if (
+          typeof data.eval_count ===
+          "number"
+        ) {
           candidatesTokenCount =
             data.eval_count;
         }
+
+        /*
+         * Make sure total usage is available
+         * even if the final JSON arrived in
+         * the remaining buffer.
+         */
+
+        totalTokenCount =
+          (promptTokenCount || 0) +
+          (candidatesTokenCount || 0);
       } catch {
-        // Ignore incomplete final buffer.
+        /*
+         * Ignore incomplete final buffer.
+         */
       }
     }
+
+    /*
+     * ---------------------------------------------------------
+     * 16. If usage wasn't reported earlier,
+     *     report it here.
+     * ---------------------------------------------------------
+     */
+
+    if (
+      onUsage &&
+      totalTokenCount !== undefined
+    ) {
+      await onUsage({
+        promptTokenCount,
+        candidatesTokenCount,
+        totalTokenCount,
+        thoughtsTokenCount:
+          undefined,
+      });
+    }
   } finally {
+    /*
+     * Always release the stream reader.
+     */
+
     reader.releaseLock();
   }
 }
