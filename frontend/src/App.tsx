@@ -291,7 +291,7 @@ function App() {
       }
 
       try {
-        const response = await fetch(" https://exactly-transmission-prescribed-parent.trycloudflare.com/api/auth/me", {
+        const response = await fetch(" https://personal-ai-assistant-1mud.onrender.com/api/auth/me", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -461,7 +461,7 @@ function App() {
   async function loadConversation(id: string) {
     try {
       const response = await authorizedFetch(
-        ` https://exactly-transmission-prescribed-parent.trycloudflare.com/api/conversations/${id}`
+        ` https://personal-ai-assistant-1mud.onrender.com/api/conversations/${id}`
       );
 
       if (!response.ok) {
@@ -505,7 +505,7 @@ function App() {
 
     try {
       const response = await authorizedFetch(
-        ` https://exactly-transmission-prescribed-parent.trycloudflare.com/api/conversations/${id}`,
+        ` https://personal-ai-assistant-1mud.onrender.com/api/conversations/${id}`,
         {
           method: "DELETE",
         }
@@ -544,7 +544,7 @@ function App() {
   async function loadConversations() {
     try {
       const response = await authorizedFetch(
-        " https://exactly-transmission-prescribed-parent.trycloudflare.com/api/conversations"
+        " https://personal-ai-assistant-1mud.onrender.com/api/conversations"
       );
 
       if (!response.ok) {
@@ -751,7 +751,7 @@ function App() {
       // -----------------------------
 
       const response = await authorizedFetch(
-        " https://exactly-transmission-prescribed-parent.trycloudflare.com/api/chat",
+        " https://personal-ai-assistant-1mud.onrender.com/api/chat",
         {
           method: "POST",
 
@@ -2159,7 +2159,7 @@ function AuthScreen({
   const [notice, setNotice] = useState("");
 
   const callAuth = async (endpoint: string, body: Record<string, string>) => {
-    const response = await fetch(` https://exactly-transmission-prescribed-parent.trycloudflare.com/api/auth/${endpoint}`, {
+    const response = await fetch(` https://personal-ai-assistant-1mud.onrender.com/api/auth/${endpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
