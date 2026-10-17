@@ -1,15 +1,19 @@
 import nodemailer from "nodemailer";
 
+
 function getTransporter() {
   const host = process.env.SMTP_HOST;
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
-  const port = Number(process.env.SMTP_PORT || 587);
-  const secure = String(process.env.SMTP_SECURE || "false").toLowerCase() === "true";
+  const port = Number(process.env.SMTP_PORT || 465);
+
+  const secure =
+    String(process.env.SMTP_SECURE || (port === 465))
+      .toLowerCase() === "true";
 
   if (!host || !user || !pass) {
     throw new Error(
-      "Email is not configured. Add SMTP_HOST, SMTP_USER, SMTP_PASS and SMTP_FROM to backend .env."
+      "Missing SMTP_HOST, SMTP_USER, or SMTP_PASS"
     );
   }
 
@@ -18,8 +22,12 @@ function getTransporter() {
     port,
     secure,
     auth: { user, pass },
+    connectionTimeout: 20000,
+    greetingTimeout: 20000,
+    socketTimeout: 30000,
   });
 }
+
 
 export async function sendAuthCodeEmail(
   to: string,
