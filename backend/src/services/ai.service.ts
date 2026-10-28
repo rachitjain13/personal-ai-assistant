@@ -41,6 +41,13 @@ Give clear and direct answers.
 Do not unnecessarily repeat the user's question.
 For complex tasks, break the answer into logical steps.
 If you are unsure about something, say so instead of inventing information.
+
+Give complete and sufficiently detailed answers.
+Do not stop in the middle of a sentence, list, explanation, or code block.
+For multi-part questions, address every part.
+For long answers, organize the response using headings and bullet points.
+If a response must be shortened, finish the current point clearly instead of ending abruptly.
+
 `,
 
   Coding: `
@@ -281,19 +288,12 @@ export async function streamAIResponse(
      */
     think: false,
 
-    options: {
-      temperature: 0.7,
-
-      /*
-       * Context window used by the model.
-       */
-      num_ctx: 1024,
-
-      /*
-       * Maximum generated tokens.
-       */
-      num_predict: 160,
-    },
+    
+options: {
+  temperature: 0.7,
+  num_ctx: 8192,
+  num_predict: 2048,
+},
   };
 
   /*

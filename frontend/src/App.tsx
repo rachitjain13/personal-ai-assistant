@@ -3,7 +3,8 @@ import {
   useRef,
   useState,
 } from "react";
-
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   ArrowUp,
   Bell,
@@ -27,6 +28,7 @@ import {
   Trash2
 } from "lucide-react";
 
+
 interface SpeechRecognitionEvent extends Event {
   results: SpeechRecognitionResultList;
 }
@@ -44,15 +46,15 @@ interface SpeechRecognitionInstance {
   onstart: (() => void) | null;
   onend: (() => void) | null;
   onresult:
-    | ((event: SpeechRecognitionEvent) => void)
-    | null;
+  | ((event: SpeechRecognitionEvent) => void)
+  | null;
   onerror:
-    | ((event: SpeechRecognitionErrorEvent) => void)
-    | null;
+  | ((event: SpeechRecognitionErrorEvent) => void)
+  | null;
 }
 
 interface SpeechRecognitionConstructor {
-  new (): SpeechRecognitionInstance;
+  new(): SpeechRecognitionInstance;
 }
 
 declare global {
@@ -136,7 +138,7 @@ function App() {
   const [message, setMessage] =
     useState("");
   const [isListening, setIsListening] =
-  useState(false);
+    useState(false);
 
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -490,10 +492,10 @@ function App() {
       console.error(
         " Failed to load conversation:",
         error
-      );
+      ); messages.map
     }
   }
-  
+
   async function deleteConversation(id: string) {
     const confirmed = window.confirm(
       "Are you sure you want to delete this chat?"
@@ -762,11 +764,10 @@ function App() {
               localStorage.getItem("personal-ai-auth-token")
             )
               ? {
-                  Authorization: `Bearer ${
-                    authToken ||
-                    localStorage.getItem("personal-ai-auth-token")
+                Authorization: `Bearer ${authToken ||
+                  localStorage.getItem("personal-ai-auth-token")
                   }`,
-                }
+              }
               : {}),
           },
 
@@ -971,29 +972,29 @@ function App() {
                 setCurrentUser((previous) =>
                   previous
                     ? {
-                        ...previous,
-                        usage: {
-                          ...(previous.usage || {
-                            totalInputTokens: 0,
-                            totalOutputTokens: 0,
-                            totalTokens: 0,
-                            requestCount: 0,
-                          }),
-                          totalTokens: accountTotalTokens,
-                          totalInputTokens:
-                            Number(data.usage.accountTotalInputTokens) ||
-                            previous.usage?.totalInputTokens ||
-                            0,
-                          totalOutputTokens:
-                            Number(data.usage.accountTotalOutputTokens) ||
-                            previous.usage?.totalOutputTokens ||
-                            0,
-                          requestCount:
-                            Number(data.usage.accountRequestCount) ||
-                            previous.usage?.requestCount ||
-                            0,
-                        },
-                      }
+                      ...previous,
+                      usage: {
+                        ...(previous.usage || {
+                          totalInputTokens: 0,
+                          totalOutputTokens: 0,
+                          totalTokens: 0,
+                          requestCount: 0,
+                        }),
+                        totalTokens: accountTotalTokens,
+                        totalInputTokens:
+                          Number(data.usage.accountTotalInputTokens) ||
+                          previous.usage?.totalInputTokens ||
+                          0,
+                        totalOutputTokens:
+                          Number(data.usage.accountTotalOutputTokens) ||
+                          previous.usage?.totalOutputTokens ||
+                          0,
+                        requestCount:
+                          Number(data.usage.accountRequestCount) ||
+                          previous.usage?.requestCount ||
+                          0,
+                      },
+                    }
                     : previous
                 );
               }
@@ -1131,77 +1132,77 @@ function App() {
 
       <div className="flex h-screen w-full overflow-hidden bg-black text-white">
 
-      {/* MOBILE OVERLAY */}
+        {/* MOBILE OVERLAY */}
 
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/70 md:hidden"
-          onClick={() =>
-            setSidebarOpen(false)
-          }
-        />
-      )}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 z-30 bg-black/70 md:hidden"
+            onClick={() =>
+              setSidebarOpen(false)
+            }
+          />
+        )}
 
-      {/* =========================
+        {/* =========================
           SIDEBAR
       ========================= */}
 
-      <aside
-        className={`
+        <aside
+          className={`
           fixed md:relative z-40 h-full
           flex flex-col
           border-r border-white/10
           bg-[#080808]
           transition-all duration-300
           ${sidebarOpen
-            ? "w-[280px]"
-            : "w-0 overflow-hidden"
-          }
+              ? "w-[280px]"
+              : "w-0 overflow-hidden"
+            }
         `}
-      >
+        >
 
-        {/* LOGO */}
+          {/* LOGO */}
 
-        <div className="flex h-[70px] items-center justify-between px-5">
+          <div className="flex h-[70px] items-center justify-between px-5">
 
-          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3">
 
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-black">
-              <Sparkles size={19} />
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-black">
+                <Sparkles size={19} />
+              </div>
+
+              <div>
+
+                <h1 className="text-sm font-semibold tracking-wide">
+                  Personal AI
+                </h1>
+
+                <p className="text-[11px] text-white/40">
+                  Your intelligent assistant
+                </p>
+
+              </div>
+
             </div>
 
-            <div>
-
-              <h1 className="text-sm font-semibold tracking-wide">
-                Personal AI
-              </h1>
-
-              <p className="text-[11px] text-white/40">
-                Your intelligent assistant
-              </p>
-
-            </div>
+            <button
+              onClick={() =>
+                setSidebarOpen(false)
+              }
+              className="rounded-lg p-2 text-white/40 hover:bg-white/5 hover:text-white md:hidden"
+            >
+              <X size={18} />
+            </button>
 
           </div>
 
-          <button
-            onClick={() =>
-              setSidebarOpen(false)
-            }
-            className="rounded-lg p-2 text-white/40 hover:bg-white/5 hover:text-white md:hidden"
-          >
-            <X size={18} />
-          </button>
+          {/* NEW CHAT */}
 
-        </div>
+          <div className="px-4">
 
-        {/* NEW CHAT */}
-
-        <div className="px-4">
-
-          <button
-            onClick={createNewChat}
-            className="
+            <button
+              onClick={createNewChat}
+              className="
               flex w-full items-center gap-3
               rounded-xl border border-white/10
               bg-white/[0.04]
@@ -1210,346 +1211,345 @@ function App() {
               transition
               hover:bg-white/[0.08]
             "
-          >
+            >
 
-            <Plus size={18} />
+              <Plus size={18} />
 
-            <span>
-              New chat
-            </span>
+              <span>
+                New chat
+              </span>
 
-            <span className="ml-auto text-xs text-white/30">
-              Ctrl K
-            </span>
+              <span className="ml-auto text-xs text-white/30">
+                Ctrl K
+              </span>
 
-          </button>
+            </button>
 
-        </div>
+          </div>
 
-        {/* SEARCH */}
+          {/* SEARCH */}
 
-        <div className="px-4 pt-3">
+          <div className="px-4 pt-3">
 
-          <div className="flex items-center gap-3 rounded-xl bg-white/[0.04] px-4 py-3">
+            <div className="flex items-center gap-3 rounded-xl bg-white/[0.04] px-4 py-3">
 
-            <Search
-              size={16}
-              className="text-white/40"
-            />
+              <Search
+                size={16}
+                className="text-white/40"
+              />
 
-            <input
-              placeholder="Search chats"
-              className="
+              <input
+                placeholder="Search chats"
+                className="
                 w-full bg-transparent
                 text-sm text-white
                 outline-none
                 placeholder:text-white/30
               "
-            />
-
-            <span className="text-xs text-white/20">
-              /
-            </span>
-
-          </div>
-
-        </div>
-
-        {/* CHAT HISTORY */}
-
-        <div className="flex-1 overflow-y-auto px-3 py-4">
-          <div className="mb-6">
-            <div className="px-3 mb-2 text-xs text-gray-500">
-              Today
-            </div>
-
-            {conversations
-              .filter((chat) => {
-                if (!chat.updatedAt) return true;
-
-                const today = new Date();
-                const chatDate = new Date(chat.updatedAt);
-
-                return (
-                  chatDate.toDateString() ===
-                  today.toDateString()
-                );
-              })
-              .map((chat) => (
-                <div
-                  key={chat.id}
-                  className={`group flex items-center gap-1 rounded-lg mb-1 ${conversationId === chat.id
-                      ? "bg-white text-black"
-                      : "text-gray-300 hover:bg-[#1a1a1a]"
-                    }`}
-                >
-                  <button
-                    onClick={() =>
-                      loadConversation(chat.id)
-                    }
-                    className="flex-1 min-w-0 text-left px-3 py-2 text-sm"
-                  >
-                    <div className="truncate">
-                      {chat.title}
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      deleteConversation(chat.id);
-                    }}
-                    className="mr-2 p-1.5 rounded-md opacity-0 group-hover:opacity-100 hover:bg-black/10 transition"
-                    title="Delete chat"
-                  >
-                    <Trash2
-                      size={15}
-                      strokeWidth={1.8}
-                    />
-                  </button>
-                </div>
-              ))}
-          </div>
-
-          <div>
-            <div className="px-3 mb-2 text-xs text-gray-500">
-              Previous
-            </div>
-
-            {conversations
-              .filter((chat) => {
-                if (!chat.updatedAt) return false;
-
-                const today = new Date();
-                const chatDate = new Date(chat.updatedAt);
-
-                return (
-                  chatDate.toDateString() !==
-                  today.toDateString()
-                );
-              })
-              .map((chat) => (
-                <div
-                  key={chat.id}
-                  className={`group flex items-center gap-1 rounded-lg mb-1 ${
-                    conversationId === chat.id
-                      ? "bg-white text-black"
-                      : "text-gray-300 hover:bg-[#1a1a1a]"
-                  }`}
-                >
-                  <button
-                    onClick={() =>
-                      loadConversation(chat.id)
-                    }
-                    className="flex-1 min-w-0 text-left px-3 py-2 text-sm"
-                  >
-                    <div className="truncate">
-                      {chat.title}
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      deleteConversation(chat.id);
-                    }}
-                    className="mr-2 p-1.5 rounded-md opacity-0 group-hover:opacity-100 hover:bg-black/10 transition"
-                    title="Delete chat"
-                  >
-                    <Trash2
-                      size={15}
-                      strokeWidth={1.8}
-                    />
-                  </button>
-                </div>
-              ))}
-          </div>
-        </div>
-
-        {/* SIDEBAR BOTTOM */}
-
-        <div className="border-t border-white/10 p-3">
-
-          <button
-            onClick={openSettings}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/60 transition hover:bg-white/[0.05] hover:text-white"
-          >
-            <Settings size={18} />
-            <span>Settings</span>
-          </button>
-
-          <div className="relative">
-            <button
-              onClick={() => setAccountMenuOpen((previous) => !previous)}
-              title="Open account"
-              aria-expanded={accountMenuOpen}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/60 transition hover:bg-white/[0.05] hover:text-white"
-            >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-xs font-semibold text-black">
-                {(currentUser?.name || currentUser?.email || "U")
-                  .charAt(0)
-                  .toUpperCase()}
-              </div>
-
-              <div className="flex flex-1 flex-col items-start min-w-0">
-                <span className="w-full truncate text-left text-white/80">
-                  {currentUser?.name || "Personal Account"}
-                </span>
-                <span className="w-full truncate text-left text-[10px] text-white/30">
-                  {currentUser?.email || "Account"}
-                </span>
-              </div>
-
-              <ChevronDown
-                size={15}
-                className={`transition-transform ${accountMenuOpen ? "rotate-180" : ""}`}
               />
-            </button>
 
-            {accountMenuOpen && (
-              <div className="absolute bottom-full left-0 right-0 z-50 mb-2 overflow-hidden rounded-2xl border border-white/10 bg-[#111111] p-2 shadow-2xl">
-                <div className="rounded-xl bg-white/[0.04] px-3 py-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-black">
-                      {(currentUser?.name || currentUser?.email || "U")
-                        .charAt(0)
-                        .toUpperCase()}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-white">
-                        {currentUser?.name || "Personal Account"}
-                      </p>
-                      <p className="truncate text-[11px] text-white/40">
-                        {currentUser?.email}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-3 grid grid-cols-2 gap-2">
-                    <div className="rounded-lg bg-white/[0.035] px-2.5 py-2">
-                      <p className="text-[10px] text-white/35">Requests</p>
-                      <p className="mt-0.5 text-sm font-medium text-white/80">
-                        {Number(currentUser?.usage?.requestCount || 0).toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="rounded-lg bg-white/[0.035] px-2.5 py-2">
-                      <p className="text-[10px] text-white/35">Total tokens</p>
-                      <p className="mt-0.5 text-sm font-medium text-white/80">
-                        {Number(currentUser?.usage?.totalTokens || 0).toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  onClick={openSettings}
-                  className="mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/65 hover:bg-white/[0.05] hover:text-white"
-                >
-                  <Settings size={16} />
-                  Account settings
-                </button>
-
-                <button
-                  onClick={handleLogout}
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-red-300/80 hover:bg-red-500/10 hover:text-red-300"
-                >
-                  <LogOut size={16} />
-                  Log out
-                </button>
-              </div>
-            )}
-          </div>
-
-        </div>
-
-      </aside>
-
-      {/* =========================
-          MAIN
-      ========================= */}
-
-      <main className="flex min-w-0 flex-1 flex-col">
-
-        {/* HEADER */}
-
-        <header className="flex h-[70px] items-center justify-between border-b border-white/10 px-4 md:px-6">
-
-          <div className="flex items-center gap-3">
-
-            <button
-              onClick={() =>
-                setSidebarOpen(
-                  !sidebarOpen
-                )
-              }
-              className="rounded-lg p-2 text-white/50 transition hover:bg-white/5 hover:text-white"
-            >
-              <Menu size={20} />
-            </button>
-
-            <div className="flex items-center gap-2">
-
-              <span className="text-sm font-semibold">
-                {conversations.find(
-                  (chat) => chat.id === conversationId
-                )?.title || "Personal AI Assistant"}
-              </span>
-
-              <span className="rounded-md border border-white/10 px-2 py-1 text-[10px] text-white/30">
-                AI
+              <span className="text-xs text-white/20">
+                /
               </span>
 
             </div>
 
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* CHAT HISTORY */}
 
-            <button className="rounded-lg p-2 text-white/40 transition hover:bg-white/5 hover:text-white">
-              <Bell size={18} />
-            </button>
+          <div className="flex-1 overflow-y-auto px-3 py-4">
+            <div className="mb-6">
+              <div className="px-3 mb-2 text-xs text-gray-500">
+                Today
+              </div>
+
+              {conversations
+                .filter((chat) => {
+                  if (!chat.updatedAt) return true;
+
+                  const today = new Date();
+                  const chatDate = new Date(chat.updatedAt);
+
+                  return (
+                    chatDate.toDateString() ===
+                    today.toDateString()
+                  );
+                })
+                .map((chat) => (
+                  <div
+                    key={chat.id}
+                    className={`group flex items-center gap-1 rounded-lg mb-1 ${conversationId === chat.id
+                      ? "bg-white text-black"
+                      : "text-gray-300 hover:bg-[#1a1a1a]"
+                      }`}
+                  >
+                    <button
+                      onClick={() =>
+                        loadConversation(chat.id)
+                      }
+                      className="flex-1 min-w-0 text-left px-3 py-2 text-sm"
+                    >
+                      <div className="truncate">
+                        {chat.title}
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        deleteConversation(chat.id);
+                      }}
+                      className="mr-2 p-1.5 rounded-md opacity-0 group-hover:opacity-100 hover:bg-black/10 transition"
+                      title="Delete chat"
+                    >
+                      <Trash2
+                        size={15}
+                        strokeWidth={1.8}
+                      />
+                    </button>
+                  </div>
+                ))}
+            </div>
+
+            <div>
+              <div className="px-3 mb-2 text-xs text-gray-500">
+                Previous
+              </div>
+
+              {conversations
+                .filter((chat) => {
+                  if (!chat.updatedAt) return false;
+
+                  const today = new Date();
+                  const chatDate = new Date(chat.updatedAt);
+
+                  return (
+                    chatDate.toDateString() !==
+                    today.toDateString()
+                  );
+                })
+                .map((chat) => (
+                  <div
+                    key={chat.id}
+                    className={`group flex items-center gap-1 rounded-lg mb-1 ${conversationId === chat.id
+                        ? "bg-white text-black"
+                        : "text-gray-300 hover:bg-[#1a1a1a]"
+                      }`}
+                  >
+                    <button
+                      onClick={() =>
+                        loadConversation(chat.id)
+                      }
+                      className="flex-1 min-w-0 text-left px-3 py-2 text-sm"
+                    >
+                      <div className="truncate">
+                        {chat.title}
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        deleteConversation(chat.id);
+                      }}
+                      className="mr-2 p-1.5 rounded-md opacity-0 group-hover:opacity-100 hover:bg-black/10 transition"
+                      title="Delete chat"
+                    >
+                      <Trash2
+                        size={15}
+                        strokeWidth={1.8}
+                      />
+                    </button>
+                  </div>
+                ))}
+            </div>
+          </div>
+
+          {/* SIDEBAR BOTTOM */}
+
+          <div className="border-t border-white/10 p-3">
 
             <button
               onClick={openSettings}
-              className="hidden rounded-lg p-2 text-white/40 transition hover:bg-white/5 hover:text-white sm:block"
-              title="Settings"
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/60 transition hover:bg-white/[0.05] hover:text-white"
             >
               <Settings size={18} />
+              <span>Settings</span>
             </button>
 
-            <button
-              onClick={() => setAccountMenuOpen((previous) => !previous)}
-              className="ml-1 flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white text-black text-xs font-semibold transition hover:scale-105"
-              title={currentUser?.email || "Account"}
-              aria-expanded={accountMenuOpen}
-            >
-              {(currentUser?.name || currentUser?.email || "U")
-                .charAt(0)
-                .toUpperCase()}
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setAccountMenuOpen((previous) => !previous)}
+                title="Open account"
+                aria-expanded={accountMenuOpen}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/60 transition hover:bg-white/[0.05] hover:text-white"
+              >
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-xs font-semibold text-black">
+                  {(currentUser?.name || currentUser?.email || "U")
+                    .charAt(0)
+                    .toUpperCase()}
+                </div>
+
+                <div className="flex flex-1 flex-col items-start min-w-0">
+                  <span className="w-full truncate text-left text-white/80">
+                    {currentUser?.name || "Personal Account"}
+                  </span>
+                  <span className="w-full truncate text-left text-[10px] text-white/30">
+                    {currentUser?.email || "Account"}
+                  </span>
+                </div>
+
+                <ChevronDown
+                  size={15}
+                  className={`transition-transform ${accountMenuOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+
+              {accountMenuOpen && (
+                <div className="absolute bottom-full left-0 right-0 z-50 mb-2 overflow-hidden rounded-2xl border border-white/10 bg-[#111111] p-2 shadow-2xl">
+                  <div className="rounded-xl bg-white/[0.04] px-3 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-black">
+                        {(currentUser?.name || currentUser?.email || "U")
+                          .charAt(0)
+                          .toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-white">
+                          {currentUser?.name || "Personal Account"}
+                        </p>
+                        <p className="truncate text-[11px] text-white/40">
+                          {currentUser?.email}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      <div className="rounded-lg bg-white/[0.035] px-2.5 py-2">
+                        <p className="text-[10px] text-white/35">Requests</p>
+                        <p className="mt-0.5 text-sm font-medium text-white/80">
+                          {Number(currentUser?.usage?.requestCount || 0).toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="rounded-lg bg-white/[0.035] px-2.5 py-2">
+                        <p className="text-[10px] text-white/35">Total tokens</p>
+                        <p className="mt-0.5 text-sm font-medium text-white/80">
+                          {Number(currentUser?.usage?.totalTokens || 0).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={openSettings}
+                    className="mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/65 hover:bg-white/[0.05] hover:text-white"
+                  >
+                    <Settings size={16} />
+                    Account settings
+                  </button>
+
+                  <button
+                    onClick={handleLogout}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-red-300/80 hover:bg-red-500/10 hover:text-red-300"
+                  >
+                    <LogOut size={16} />
+                    Log out
+                  </button>
+                </div>
+              )}
+            </div>
 
           </div>
 
-        </header>
+        </aside>
 
         {/* =========================
+          MAIN
+      ========================= */}
+
+        <main className="flex min-w-0 flex-1 flex-col">
+
+          {/* HEADER */}
+
+          <header className="flex h-[70px] items-center justify-between border-b border-white/10 px-4 md:px-6">
+
+            <div className="flex items-center gap-3">
+
+              <button
+                onClick={() =>
+                  setSidebarOpen(
+                    !sidebarOpen
+                  )
+                }
+                className="rounded-lg p-2 text-white/50 transition hover:bg-white/5 hover:text-white"
+              >
+                <Menu size={20} />
+              </button>
+
+              <div className="flex items-center gap-2">
+
+                <span className="text-sm font-semibold">
+                  {conversations.find(
+                    (chat) => chat.id === conversationId
+                  )?.title || "Personal AI Assistant"}
+                </span>
+
+                <span className="rounded-md border border-white/10 px-2 py-1 text-[10px] text-white/30">
+                  AI
+                </span>
+
+              </div>
+
+            </div>
+
+            <div className="flex items-center gap-2">
+
+              <button className="rounded-lg p-2 text-white/40 transition hover:bg-white/5 hover:text-white">
+                <Bell size={18} />
+              </button>
+
+              <button
+                onClick={openSettings}
+                className="hidden rounded-lg p-2 text-white/40 transition hover:bg-white/5 hover:text-white sm:block"
+                title="Settings"
+              >
+                <Settings size={18} />
+              </button>
+
+              <button
+                onClick={() => setAccountMenuOpen((previous) => !previous)}
+                className="ml-1 flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white text-black text-xs font-semibold transition hover:scale-105"
+                title={currentUser?.email || "Account"}
+                aria-expanded={accountMenuOpen}
+              >
+                {(currentUser?.name || currentUser?.email || "U")
+                  .charAt(0)
+                  .toUpperCase()}
+              </button>
+
+            </div>
+
+          </header>
+
+          {/* =========================
             CHAT AREA
         ========================= */}
 
-        <section className="flex flex-1 flex-col overflow-hidden">
+          <section className="flex flex-1 flex-col overflow-hidden">
 
-          <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto">
 
-            {messages.length === 0 ? (
+              {messages.length === 0 ? (
 
-              /* =========================
-                 WELCOME SCREEN
-              ========================= */
+                /* =========================
+                   WELCOME SCREEN
+                ========================= */
 
-              <div className="mx-auto flex min-h-full max-w-4xl flex-col items-center justify-center px-5 pb-20 pt-10">
+                <div className="mx-auto flex min-h-full max-w-4xl flex-col items-center justify-center px-5 pb-20 pt-10">
 
-                <div
-                  className="
+                  <div
+                    className="
                     mb-7 flex h-16 w-16
                     items-center justify-center
                     rounded-2xl
@@ -1557,117 +1557,117 @@ function App() {
                     bg-white/[0.04]
                     shadow-[0_0_50px_rgba(255,255,255,0.04)]
                   "
-                >
-                  <Sparkles size={28} />
+                  >
+                    <Sparkles size={28} />
+                  </div>
+
+                  <h2 className="text-center text-3xl font-semibold tracking-tight md:text-4xl">
+                    How can I help you?
+                  </h2>
+
+                  <p className="mt-3 max-w-lg text-center text-sm leading-6 text-white/40">
+                    Your personal AI assistant
+                    for questions, ideas,
+                    files, planning and everyday
+                    tasks.
+                  </p>
+
+                  <div className="mt-10 grid w-full max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2">
+
+                    <Suggestion
+                      title="Ask anything"
+                      description="Get a clear answer to your question"
+                      onClick={() =>
+                        sendMessage(
+                          "What can you help me with?"
+                        )
+                      }
+                    />
+
+                    <Suggestion
+                      title="Work with a file"
+                      description="Upload a file and ask me to analyze it"
+                      onClick={() =>
+                        sendMessage(
+                          "What types of files can you analyze?"
+                        )
+                      }
+                    />
+
+                    <Suggestion
+                      title="Analyze something"
+                      description="Understand files, data or images"
+                      onClick={() =>
+                        sendMessage(
+                          "What can you help me analyze?"
+                        )
+                      }
+                    />
+
+                    <Suggestion
+                      title="Plan my day"
+                      description="Organize tasks and priorities"
+                      onClick={() =>
+                        sendMessage(
+                          "Help me plan my day."
+                        )
+                      }
+                    />
+
+                  </div>
+
                 </div>
 
-                <h2 className="text-center text-3xl font-semibold tracking-tight md:text-4xl">
-                  How can I help you?
-                </h2>
+              ) : (
 
-                <p className="mt-3 max-w-lg text-center text-sm leading-6 text-white/40">
-                  Your personal AI assistant
-                  for questions, ideas,
-                  files, planning and everyday
-                  tasks.
-                </p>
+                /* =========================
+                   MESSAGES
+                ========================= */
 
-                <div className="mt-10 grid w-full max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="mx-auto w-full max-w-4xl px-4 py-8">
 
-                  <Suggestion
-                    title="Ask anything"
-                    description="Get a clear answer to your question"
-                    onClick={() =>
-                      sendMessage(
-                        "What can you help me with?"
-                      )
-                    }
-                  />
+                  <div className="space-y-8">
 
-                  <Suggestion
-                    title="Work with a file"
-                    description="Upload a file and ask me to analyze it"
-                    onClick={() =>
-                      sendMessage(
-                        "What types of files can you analyze?"
-                      )
-                    }
-                  />
+                    {messages.map(
+                      (msg) => (
 
-                  <Suggestion
-                    title="Analyze something"
-                    description="Understand files, data or images"
-                    onClick={() =>
-                      sendMessage(
-                        "What can you help me analyze?"
-                      )
-                    }
-                  />
-
-                  <Suggestion
-                    title="Plan my day"
-                    description="Organize tasks and priorities"
-                    onClick={() =>
-                      sendMessage(
-                        "Help me plan my day."
-                      )
-                    }
-                  />
-
-                </div>
-
-              </div>
-
-            ) : (
-
-              /* =========================
-                 MESSAGES
-              ========================= */
-
-              <div className="mx-auto w-full max-w-4xl px-4 py-8">
-
-                <div className="space-y-8">
-
-                  {messages.map(
-                    (msg) => (
-
-                      <div
-                        key={msg.id}
-                        className={`
+                        <div
+                          key={msg.id}
+                          className={`
                           flex gap-4
                           ${msg.role ===
-                            "user"
-                            ? "justify-end"
-                            : "justify-start"
-                          }
+                              "user"
+                              ? "justify-end"
+                              : "justify-start"
+                            }
                         `}
-                      >
+                        >
 
-                        {/* AI ICON */}
+                          {/* AI ICON */}
 
-                        {msg.role ===
-                          "model" && (
+                          {msg.role ===
+                            "model" && (
 
-                            <div
-                              className="
+                              <div
+                                className="
                               flex h-8 w-8 shrink-0
                               items-center justify-center
                               rounded-lg
                               bg-white
                               text-black
                             "
-                            >
-                              <Sparkles
-                                size={16}
-                              />
-                            </div>
+                              >
+                                <Sparkles
+                                  size={16}
+                                />
+                              </div>
 
-                          )}
+                            )}
 
-                        {/* MESSAGE */}
+                          {/* MESSAGE */}
 
-                        <div
-                          className={`
+                          <div
+                            className={`
                             max-w-[80%]
                             rounded-2xl
                             px-4 py-3
@@ -1675,203 +1675,208 @@ function App() {
                             leading-7
                             whitespace-pre-wrap
                             ${msg.role ===
-                              "user"
-                              ? "bg-white text-black"
-                              : "bg-white/[0.05] text-white/90"
-                            }
+                                "user"
+                                ? "bg-white text-black"
+                                : "bg-white/[0.05] text-white/90"
+                              }
                           `}
-                        >
+                          >
 
-                          {msg.content ? (
-                            msg.content
-                          ) : (
+                            {msg.content ? (
+                              <div className="markdown-content">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                  {msg.content}
+                                </ReactMarkdown>
+                              </div>
+                            ) : (
+                              // AI THINKING
 
-                            /* AI THINKING */
+                              /* AI THINKING */
 
-                            <span className="flex gap-1">
+                              <span className="flex gap-1">
 
-                              <span className="animate-bounce">
-                                •
+                                <span className="animate-bounce">
+                                  •
+                                </span>
+
+                                <span className="animate-bounce [animation-delay:150ms]">
+                                  •
+                                </span>
+
+                                <span className="animate-bounce [animation-delay:300ms]">
+                                  •
+                                </span>
+
                               </span>
 
-                              <span className="animate-bounce [animation-delay:150ms]">
-                                •
-                              </span>
+                            )}
 
-                              <span className="animate-bounce [animation-delay:300ms]">
-                                •
-                              </span>
-
-                            </span>
-
-                          )}
+                          </div>
 
                         </div>
 
-                      </div>
+                      )
+                    )}
 
-                    )
-                  )}
+                    <div
+                      ref={messagesEndRef}
+                    />
 
-                  <div
-                    ref={messagesEndRef}
-                  />
+                  </div>
 
                 </div>
 
-              </div>
+              )}
 
-            )}
+            </div>
 
-          </div>
-
-          {/* =========================
+            {/* =========================
               INPUT AREA
           ========================= */}
 
-          <div className="w-full px-4 pb-5 md:px-6">
+            <div className="w-full px-4 pb-5 md:px-6">
 
-            <div className="mx-auto max-w-4xl">
+              <div className="mx-auto max-w-4xl">
 
-              {/* TOOLS */}
+                {/* TOOLS */}
 
-              <div className="mb-2 flex items-center justify-end">
-                <button
-                  type="button"
-                  onClick={() => setShowTokenUsage((prev) => !prev)}
-                  className={`
+                <div className="mb-2 flex items-center justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setShowTokenUsage((prev) => !prev)}
+                    className={`
                     flex shrink-0 items-center gap-1.5
                     rounded-full border px-3 py-1.5
                     text-xs transition
                     ${showTokenUsage
-                      ? "border-white/20 bg-white text-black"
-                      : "border-white/10 bg-white/[0.03] text-white/55 hover:bg-white/[0.06]"
-                    }
+                        ? "border-white/20 bg-white text-black"
+                        : "border-white/10 bg-white/[0.03] text-white/55 hover:bg-white/[0.06]"
+                      }
                   `}
-                  title="Show token usage"
-                  aria-expanded={showTokenUsage}
-                >
-                  <Sparkles size={12} />
-                  Tokens
-                </button>
-              </div>
+                    title="Show token usage"
+                    aria-expanded={showTokenUsage}
+                  >
+                    <Sparkles size={12} />
+                    Tokens
+                  </button>
+                </div>
 
-              {/* TOKEN USAGE — SLIDE DOWN */}
+                {/* TOKEN USAGE — SLIDE DOWN */}
 
-              <div
-                className={`
+                <div
+                  className={`
                   overflow-hidden transition-all duration-300 ease-out
                   ${showTokenUsage
-                    ? "mb-3 max-h-60 translate-y-0 opacity-100"
-                    : "mb-0 max-h-0 -translate-y-1 opacity-0"
-                  }
+                      ? "mb-3 max-h-60 translate-y-0 opacity-100"
+                      : "mb-0 max-h-0 -translate-y-1 opacity-0"
+                    }
                 `}
-                aria-hidden={!showTokenUsage}
-              >
-                <div
-                  className="rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2.5"
-                  title="Context remaining is an estimate for the latest request, not your Google API quota."
+                  aria-hidden={!showTokenUsage}
                 >
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 text-xs font-medium text-white/75">
-                      <Sparkles size={13} />
-                      Token usage
+                  <div
+                    className="rounded-xl border border-white/10 bg-white/[0.025] px-3 py-2.5"
+                    title="Context remaining is an estimate for the latest request, not your Google API quota."
+                  >
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2 text-xs font-medium text-white/75">
+                        <Sparkles size={13} />
+                        Token usage
+                      </div>
+                      <div className="text-[10px] text-white/35">
+                        Session total: {sessionTokensUsed.toLocaleString()} tokens
+                      </div>
                     </div>
-                    <div className="text-[10px] text-white/35">
-                      Session total: {sessionTokensUsed.toLocaleString()} tokens
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    <div className="rounded-lg bg-white/[0.035] px-2.5 py-2">
-                      <p className="text-[10px] text-white/35">Input · latest</p>
-                      <p className="mt-0.5 text-sm font-semibold text-white/85">
-                        {lastTokenUsage ? lastTokenUsage.inputTokens.toLocaleString() : "—"}
-                      </p>
-                    </div>
-                    <div className="rounded-lg bg-white/[0.035] px-2.5 py-2">
-                      <p className="text-[10px] text-white/35">Output · latest</p>
-                      <p className="mt-0.5 text-sm font-semibold text-white/85">
-                        {lastTokenUsage ? lastTokenUsage.outputTokens.toLocaleString() : "—"}
-                      </p>
-                    </div>
-                    <div className="rounded-lg bg-white/[0.035] px-2.5 py-2">
-                      <p className="text-[10px] text-white/35">Total · latest</p>
-                      <p className="mt-0.5 text-sm font-semibold text-white/85">
-                        {lastTokenUsage ? lastTokenUsage.totalTokens.toLocaleString() : "—"}
-                      </p>
-                    </div>
-                    <div className="rounded-lg bg-white/[0.035] px-2.5 py-2">
-                      <p className="text-[10px] text-white/35">Context remaining*</p>
-                      <p className="mt-0.5 text-sm font-semibold text-white/85">
-                        {lastTokenUsage ? lastTokenUsage.contextRemaining.toLocaleString() : "—"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <p className="mt-1.5 text-[10px] text-white/25">
-                    *Estimated from a 1,048,576-token context window for Gemini 3.7 Flash. This is not your remaining daily/API quota.
-                  </p>
-                </div>
-              </div>
-
-              {/* ATTACHMENT PREVIEW */}
-
-              {attachments.length > 0 && (
-                <div className="mb-3 flex flex-wrap gap-2">
-                  {attachments.map((attachment) => (
-                    <div
-                      key={attachment.id}
-                      className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-2.5 py-2"
-                    >
-                      {attachment.previewUrl ? (
-                        <img
-                          src={attachment.previewUrl}
-                          alt={attachment.name}
-                          className="h-10 w-10 rounded-lg object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/[0.06]">
-                          <FileText size={18} className="text-white/60" />
-                        </div>
-                      )}
-
-                      <div className="min-w-0 max-w-[200px]">
-                        <p className="truncate text-xs text-white/80">
-                          {attachment.name}
-                        </p>
-                        <p className="text-[10px] text-white/30">
-                          {(attachment.size / 1024 / 1024).toFixed(2)} MB
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      <div className="rounded-lg bg-white/[0.035] px-2.5 py-2">
+                        <p className="text-[10px] text-white/35">Input · latest</p>
+                        <p className="mt-0.5 text-sm font-semibold text-white/85">
+                          {lastTokenUsage ? lastTokenUsage.inputTokens.toLocaleString() : "—"}
                         </p>
                       </div>
-
-                      <button
-                        type="button"
-                        onClick={() => removeAttachment(attachment.id)}
-                        disabled={isGenerating}
-                        className="rounded-full p-1 text-white/40 hover:bg-white/10 hover:text-white disabled:opacity-30"
-                        title="Remove attachment"
-                      >
-                        <X size={15} />
-                      </button>
+                      <div className="rounded-lg bg-white/[0.035] px-2.5 py-2">
+                        <p className="text-[10px] text-white/35">Output · latest</p>
+                        <p className="mt-0.5 text-sm font-semibold text-white/85">
+                          {lastTokenUsage ? lastTokenUsage.outputTokens.toLocaleString() : "—"}
+                        </p>
+                      </div>
+                      <div className="rounded-lg bg-white/[0.035] px-2.5 py-2">
+                        <p className="text-[10px] text-white/35">Total · latest</p>
+                        <p className="mt-0.5 text-sm font-semibold text-white/85">
+                          {lastTokenUsage ? lastTokenUsage.totalTokens.toLocaleString() : "—"}
+                        </p>
+                      </div>
+                      <div className="rounded-lg bg-white/[0.035] px-2.5 py-2">
+                        <p className="text-[10px] text-white/35">Context remaining*</p>
+                        <p className="mt-0.5 text-sm font-semibold text-white/85">
+                          {lastTokenUsage ? lastTokenUsage.contextRemaining.toLocaleString() : "—"}
+                        </p>
+                      </div>
                     </div>
-                  ))}
+
+                    <p className="mt-1.5 text-[10px] text-white/25">
+                      *Estimated from a 1,048,576-token context window for Gemini 3.7 Flash. This is not your remaining daily/API quota.
+                    </p>
+                  </div>
                 </div>
-              )}
 
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept=".jpg,.jpeg,.png,.webp,.pdf,.txt,.csv"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
+                {/* ATTACHMENT PREVIEW */}
 
-              {/* COMPOSER */}
+                {attachments.length > 0 && (
+                  <div className="mb-3 flex flex-wrap gap-2">
+                    {attachments.map((attachment) => (
+                      <div
+                        key={attachment.id}
+                        className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-2.5 py-2"
+                      >
+                        {attachment.previewUrl ? (
+                          <img
+                            src={attachment.previewUrl}
+                            alt={attachment.name}
+                            className="h-10 w-10 rounded-lg object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/[0.06]">
+                            <FileText size={18} className="text-white/60" />
+                          </div>
+                        )}
 
-              <div
-                className="
+                        <div className="min-w-0 max-w-[200px]">
+                          <p className="truncate text-xs text-white/80">
+                            {attachment.name}
+                          </p>
+                          <p className="text-[10px] text-white/30">
+                            {(attachment.size / 1024 / 1024).toFixed(2)} MB
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => removeAttachment(attachment.id)}
+                          disabled={isGenerating}
+                          className="rounded-full p-1 text-white/40 hover:bg-white/10 hover:text-white disabled:opacity-30"
+                          title="Remove attachment"
+                        >
+                          <X size={15} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept=".jpg,.jpeg,.png,.webp,.pdf,.txt,.csv"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+
+                {/* COMPOSER */}
+
+                <div
+                  className="
                   rounded-2xl
                   border border-white/10
                   bg-[#111111]
@@ -1879,28 +1884,28 @@ function App() {
                   transition
                   focus-within:border-white/20
                 "
-              >
+                >
 
-                <textarea
-                  value={message}
-                  onChange={(event) =>
-                    setMessage(
-                      event.target.value
-                    )
-                  }
-                  onKeyDown={
-                    handleKeyDown
-                  }
-                  rows={1}
-                  disabled={
-                    isGenerating
-                  }
-                  placeholder={
-                    isGenerating
-                      ? "AI is thinking..."
-                      : "Message your AI assistant..."
-                  }
-                  className="
+                  <textarea
+                    value={message}
+                    onChange={(event) =>
+                      setMessage(
+                        event.target.value
+                      )
+                    }
+                    onKeyDown={
+                      handleKeyDown
+                    }
+                    rows={1}
+                    disabled={
+                      isGenerating
+                    }
+                    placeholder={
+                      isGenerating
+                        ? "AI is thinking..."
+                        : "Message your AI assistant..."
+                    }
+                    className="
                     max-h-40
                     min-h-[56px]
                     w-full
@@ -1913,58 +1918,57 @@ function App() {
                     placeholder:text-white/30
                     disabled:opacity-50
                   "
-                />
+                  />
 
-                <div className="flex items-center justify-between px-3 pb-3">
+                  <div className="flex items-center justify-between px-3 pb-3">
 
-                  <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1">
 
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={isGenerating}
-                      title="Attach a file"
-                      className="rounded-lg p-2 text-white/40 transition hover:bg-white/10 hover:text-white disabled:opacity-30"
-                    >
-                      <Paperclip size={18} />
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isGenerating}
+                        title="Attach a file"
+                        className="rounded-lg p-2 text-white/40 transition hover:bg-white/10 hover:text-white disabled:opacity-30"
+                      >
+                        <Paperclip size={18} />
+                      </button>
 
-                    <button
-                      type="button"
-                      onClick={startVoiceInput}
-                      disabled={isGenerating}
-                      className={`rounded-lg p-2 transition disabled:opacity-30 ${
-                        isListening
-                          ? "bg-white text-black"
-                          : "text-white/40 hover:bg-white/10 hover:text-white"
-                      }`}
-                      title={
-                        isListening
-                          ? "Stop listening"
-                          : "Voice input"
-                      }
-                    >
-                      <Mic
-                        size={18}
-                        className={
+                      <button
+                        type="button"
+                        onClick={startVoiceInput}
+                        disabled={isGenerating}
+                        className={`rounded-lg p-2 transition disabled:opacity-30 ${isListening
+                            ? "bg-white text-black"
+                            : "text-white/40 hover:bg-white/10 hover:text-white"
+                          }`}
+                        title={
                           isListening
-                            ? "animate-pulse"
-                            : ""
+                            ? "Stop listening"
+                            : "Voice input"
                         }
-                      />
-                    </button>
+                      >
+                        <Mic
+                          size={18}
+                          className={
+                            isListening
+                              ? "animate-pulse"
+                              : ""
+                          }
+                        />
+                      </button>
 
-                  </div>
+                    </div>
 
-                  <button
-                    onClick={() =>
-                      sendMessage()
-                    }
-                    disabled={
-                      (!message.trim() && attachments.length === 0) ||
-                      isGenerating
-                    }
-                    className="
+                    <button
+                      onClick={() =>
+                        sendMessage()
+                      }
+                      disabled={
+                        (!message.trim() && attachments.length === 0) ||
+                        isGenerating
+                      }
+                      className="
                       flex h-9 w-9
                       items-center
                       justify-center
@@ -1977,156 +1981,155 @@ function App() {
                       disabled:bg-white/10
                       disabled:text-white/20
                     "
-                  >
+                    >
 
-                    <ArrowUp size={18} />
+                      <ArrowUp size={18} />
 
-                  </button>
+                    </button>
+
+                  </div>
 
                 </div>
 
-              </div>
+                <p className="mt-3 text-center text-[10px] text-white/20">
+                  AI can make mistakes.
+                  Check important
+                  information.
+                </p>
 
-              <p className="mt-3 text-center text-[10px] text-white/20">
-                AI can make mistakes.
-                Check important
-                information.
-              </p>
+              </div>
 
             </div>
 
-          </div>
+          </section>
 
-        </section>
+        </main>
 
-      </main>
-
-      {/* ACCOUNT MENU FROM HEADER */}
-      {accountMenuOpen && (
-        <div
-          className="fixed inset-0 z-30"
-          onClick={() => setAccountMenuOpen(false)}
-        >
+        {/* ACCOUNT MENU FROM HEADER */}
+        {accountMenuOpen && (
           <div
-            className="absolute right-4 top-[58px] w-72 rounded-2xl border border-white/10 bg-[#111111] p-2 shadow-2xl md:right-6"
-            onClick={(event) => event.stopPropagation()}
+            className="fixed inset-0 z-30"
+            onClick={() => setAccountMenuOpen(false)}
           >
-            <div className="rounded-xl bg-white/[0.04] px-3 py-3">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-black">
-                  {(currentUser?.name || currentUser?.email || "U")
-                    .charAt(0)
-                    .toUpperCase()}
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-white">
-                    {currentUser?.name || "Personal Account"}
-                  </p>
-                  <p className="truncate text-[11px] text-white/40">
-                    {currentUser?.email}
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-3 flex items-center gap-2 text-[11px] text-white/40">
-                <Mail size={13} />
-                <span>Email verified</span>
-              </div>
-
-              {currentUser?.createdAt && (
-                <p className="mt-1 text-[10px] text-white/25">
-                  Member since {new Date(currentUser.createdAt).toLocaleDateString()}
-                </p>
-              )}
-            </div>
-
-            <button
-              onClick={openSettings}
-              className="mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/65 hover:bg-white/[0.05] hover:text-white"
+            <div
+              className="absolute right-4 top-[58px] w-72 rounded-2xl border border-white/10 bg-[#111111] p-2 shadow-2xl md:right-6"
+              onClick={(event) => event.stopPropagation()}
             >
-              <Settings size={16} />
-              Settings
-            </button>
+              <div className="rounded-xl bg-white/[0.04] px-3 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-black">
+                    {(currentUser?.name || currentUser?.email || "U")
+                      .charAt(0)
+                      .toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-white">
+                      {currentUser?.name || "Personal Account"}
+                    </p>
+                    <p className="truncate text-[11px] text-white/40">
+                      {currentUser?.email}
+                    </p>
+                  </div>
+                </div>
 
-            <button
-              onClick={handleLogout}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-red-300/80 hover:bg-red-500/10 hover:text-red-300"
-            >
-              <LogOut size={16} />
-              Log out
-            </button>
-          </div>
-        </div>
-      )}
+                <div className="mt-3 flex items-center gap-2 text-[11px] text-white/40">
+                  <Mail size={13} />
+                  <span>Email verified</span>
+                </div>
 
-      {/* SETTINGS */}
-      {settingsOpen && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
-          onClick={() => setSettingsOpen(false)}
-        >
-          <div
-            className="w-full max-w-md rounded-2xl border border-white/10 bg-[#111111] p-5 shadow-2xl"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-white">Settings</h2>
-                <p className="mt-1 text-xs text-white/40">
-                  Customize your Personal AI experience.
-                </p>
+                {currentUser?.createdAt && (
+                  <p className="mt-1 text-[10px] text-white/25">
+                    Member since {new Date(currentUser.createdAt).toLocaleDateString()}
+                  </p>
+                )}
               </div>
+
               <button
-                onClick={() => setSettingsOpen(false)}
-                className="rounded-lg p-2 text-white/40 hover:bg-white/5 hover:text-white"
+                onClick={openSettings}
+                className="mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/65 hover:bg-white/[0.05] hover:text-white"
               >
-                <X size={18} />
+                <Settings size={16} />
+                Settings
+              </button>
+
+              <button
+                onClick={handleLogout}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-red-300/80 hover:bg-red-500/10 hover:text-red-300"
+              >
+                <LogOut size={16} />
+                Log out
               </button>
             </div>
+          </div>
+        )}
 
-            <div className="mt-6">
-              <div className="mb-3 flex items-center gap-2">
-                <Palette size={16} className="text-white/60" />
-                <h3 className="text-sm font-medium text-white/85">Theme</h3>
+        {/* SETTINGS */}
+        {settingsOpen && (
+          <div
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+            onClick={() => setSettingsOpen(false)}
+          >
+            <div
+              className="w-full max-w-md rounded-2xl border border-white/10 bg-[#111111] p-5 shadow-2xl"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-white">Settings</h2>
+                  <p className="mt-1 text-xs text-white/40">
+                    Customize your Personal AI experience.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSettingsOpen(false)}
+                  className="rounded-lg p-2 text-white/40 hover:bg-white/5 hover:text-white"
+                >
+                  <X size={18} />
+                </button>
               </div>
 
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { value: "dark" as const, label: "Dark", icon: Moon },
-                  { value: "light" as const, label: "Light", icon: Sun },
-                  { value: "system" as const, label: "System", icon: Monitor },
-                ].map(({ value, label, icon: Icon }) => (
-                  <button
-                    key={value}
-                    onClick={() => setTheme(value)}
-                    className={`flex flex-col items-center gap-2 rounded-xl border px-3 py-3 text-xs transition ${
-                      theme === value
-                        ? "border-white/25 bg-white text-black"
-                        : "border-white/10 bg-white/[0.03] text-white/55 hover:bg-white/[0.07] hover:text-white"
-                    }`}
-                  >
-                    <Icon size={17} />
-                    {label}
-                  </button>
-                ))}
+              <div className="mt-6">
+                <div className="mb-3 flex items-center gap-2">
+                  <Palette size={16} className="text-white/60" />
+                  <h3 className="text-sm font-medium text-white/85">Theme</h3>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { value: "dark" as const, label: "Dark", icon: Moon },
+                    { value: "light" as const, label: "Light", icon: Sun },
+                    { value: "system" as const, label: "System", icon: Monitor },
+                  ].map(({ value, label, icon: Icon }) => (
+                    <button
+                      key={value}
+                      onClick={() => setTheme(value)}
+                      className={`flex flex-col items-center gap-2 rounded-xl border px-3 py-3 text-xs transition ${theme === value
+                          ? "border-white/25 bg-white text-black"
+                          : "border-white/10 bg-white/[0.03] text-white/55 hover:bg-white/[0.07] hover:text-white"
+                        }`}
+                    >
+                      <Icon size={17} />
+                      {label}
+                    </button>
+                  ))}
+                </div>
+
+                <p className="mt-3 text-[11px] leading-5 text-white/30">
+                  Your theme preference is saved on this device and will be restored the next time you open the app.
+                </p>
               </div>
 
-              <p className="mt-3 text-[11px] leading-5 text-white/30">
-                Your theme preference is saved on this device and will be restored the next time you open the app.
-              </p>
-            </div>
-
-            <div className="mt-6 rounded-xl border border-white/10 bg-white/[0.025] p-3">
-              <p className="text-xs font-medium text-white/75">Account</p>
-              <p className="mt-1 truncate text-xs text-white/35">
-                {currentUser?.name} · {currentUser?.email}
-              </p>
+              <div className="mt-6 rounded-xl border border-white/10 bg-white/[0.025] p-3">
+                <p className="text-xs font-medium text-white/75">Account</p>
+                <p className="mt-1 truncate text-xs text-white/35">
+                  {currentUser?.name} · {currentUser?.email}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-    </div>
+      </div>
     </>
   );
 }
@@ -2255,10 +2258,10 @@ function AuthScreen({
 
   const description =
     mode === "login" ? "Sign in to continue to your personal workspace." :
-    mode === "register" ? "We'll email you a code to confirm this email belongs to you." :
-    mode === "verify-email" ? `Enter the 6-digit code sent to ${email}.` :
-    mode === "forgot-password" ? "We'll send a password reset code if this email has an account." :
-    `Enter the reset code sent to ${email}, then choose a new password.`;
+      mode === "register" ? "We'll email you a code to confirm this email belongs to you." :
+        mode === "verify-email" ? `Enter the 6-digit code sent to ${email}.` :
+          mode === "forgot-password" ? "We'll send a password reset code if this email has an account." :
+            `Enter the reset code sent to ${email}, then choose a new password.`;
 
   const showEmail = true;
   const showPassword = mode === "login" || mode === "register" || mode === "reset-password";
@@ -2358,10 +2361,10 @@ function AuthScreen({
           >
             {loading ? "Please wait..." :
               mode === "login" ? "Sign in" :
-              mode === "register" ? "Send verification code" :
-              mode === "verify-email" ? "Verify email and create account" :
-              mode === "forgot-password" ? "Send reset code" :
-              "Reset password"}
+                mode === "register" ? "Send verification code" :
+                  mode === "verify-email" ? "Verify email and create account" :
+                    mode === "forgot-password" ? "Send reset code" :
+                      "Reset password"}
           </button>
 
           {mode === "login" && (
@@ -2406,9 +2409,9 @@ function AuthScreen({
             onClick={() => {
               const nextMode: AuthMode =
                 mode === "login" ? "register" :
-                mode === "register" ? "login" :
-                mode === "forgot-password" ? "login" :
-                "login";
+                  mode === "register" ? "login" :
+                    mode === "forgot-password" ? "login" :
+                      "login";
               setMode(nextMode);
               setError("");
               setNotice("");
@@ -2418,8 +2421,8 @@ function AuthScreen({
             className="mt-4 w-full text-center text-xs text-white/40 transition hover:text-white"
           >
             {mode === "login" ? "Don't have an account? Create one" :
-             mode === "register" ? "Already have an account? Sign in" :
-             "Back to sign in"}
+              mode === "register" ? "Already have an account? Sign in" :
+                "Back to sign in"}
           </button>
         </form>
 
